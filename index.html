@@ -584,13 +584,27 @@ function acSearch(){
   list.style.display='block';
 }
 function fillPerson(id){
-  var r=null;for(var i=0;i<DB.length;i++){if(DB[i].id===id){r=DB[i];break;}}
+  // Zoek meest recent bezoek van deze persoon
+  var r=null;
+  for(var i=0;i<DB.length;i++){
+    if(String(DB[i].id)===String(id)){r=DB[i];break;}
+  }
   if(!r)return;
-  document.getElementById('voornaam').value=r.voornaam;
-  document.getElementById('achternaam').value=r.achternaam;
+  // Vul persoonsgegevens in
+  document.getElementById('voornaam').value=r.voornaam||'';
+  document.getElementById('achternaam').value=r.achternaam||'';
   document.getElementById('geslacht').value=r.geslacht||'';
   document.getElementById('leeftijd').value=r.leeftijd||'';
   document.getElementById('postcode').value=r.postcode||'';
+  // Datum van vandaag (nieuw bezoek)
+  document.getElementById('datum').value=new Date().toISOString().split('T')[0];
+  // Leeg apparaat/probleem velden want dit is een nieuw bezoek
+  document.getElementById('apparaat').value='';
+  document.getElementById('categorie').value='';
+  document.getElementById('probleem').value='';
+  document.getElementById('oplossing').value='';
+  document.getElementById('status').value='afgerond';
+  document.getElementById('opmerkingen').value='';
   document.getElementById('ac-list').style.display='none';
   var v=DB.filter(function(x){return x.voornaam===r.voornaam&&x.achternaam===r.achternaam;}).length;
   document.getElementById('known-txt').textContent='Bekende bezoeker — '+v+' eerder bezoek'+(v!==1?'en':'')+' in database';
