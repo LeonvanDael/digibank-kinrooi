@@ -584,16 +584,30 @@ function bewerkRecord(id){
   editId=id;
   var velden=['voornaam','achternaam','geslacht','leeftijd','postcode','vrijwilliger','apparaat','categorie','probleem','oplossing','status','opmerkingen'];
   velden.forEach(function(v){document.getElementById(v).value=r[v]||'';});
-  // Datum apart behandelen - converteer naar yyyy-mm-dd formaat voor het datumveld
+  // Datum apart behandelen
+  console.log('RAW datum uit DB:', r.datum, typeof r.datum);
   if(r.datum){
-    var d = String(r.datum);
-    // Als datum een Date object is of timestamp
-    if(d.indexOf('T') > -1) d = d.split('T')[0];
-    // Als datum dd/mm/yyyy formaat heeft, converteer naar yyyy-mm-dd
-    if(d.indexOf('/') > -1){
-      var parts = d.split('/');
-      d = parts[2]+'-'+parts[1]+'-'+parts[0];
+    var d = r.datum;
+    // Als het een Date object is
+    if(d instanceof Date){
+      d = d.toISOString().split('T')[0];
+    } else {
+      d = String(d);
+      console.log('Datum als string:', d);
+      // Verwijder tijdsdeel
+      if(d.indexOf('T') > -1) d = d.split('T')[0];
+      // dd/mm/yyyy naar yyyy-mm-dd
+      if(d.match(/^\d{2}\/\d{2}\/\d{4}$/)){
+        var p = d.split('/');
+        d = p[2]+'-'+p[1]+'-'+p[0];
+      }
+      // d/m/yyyy naar yyyy-mm-dd
+      if(d.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)){
+        var p = d.split('/');
+        d = p[2]+'-'+(p[1].length<2?'0'+p[1]:p[1])+'-'+(p[0].length<2?'0'+p[0]:p[0]);
+      }
     }
+    console.log('Datum na verwerking:', d);
     document.getElementById('datum').value = d;
   }
   document.getElementById('edit-banner').style.display='flex';
