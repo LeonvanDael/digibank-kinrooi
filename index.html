@@ -584,30 +584,23 @@ function bewerkRecord(id){
   editId=id;
   var velden=['voornaam','achternaam','geslacht','leeftijd','postcode','vrijwilliger','apparaat','categorie','probleem','oplossing','status','opmerkingen'];
   velden.forEach(function(v){document.getElementById(v).value=r[v]||'';});
-  // Datum apart behandelen
-  console.log('RAW datum uit DB:', r.datum, typeof r.datum);
+  // Datum verwerken - Google Sheets geeft formaat "2026-06-09T22:00:00.000Z"
   if(r.datum){
-    var d = r.datum;
-    // Als het een Date object is
-    if(d instanceof Date){
-      d = d.toISOString().split('T')[0];
-    } else {
-      d = String(d);
-      console.log('Datum als string:', d);
-      // Verwijder tijdsdeel
-      if(d.indexOf('T') > -1) d = d.split('T')[0];
-      // dd/mm/yyyy naar yyyy-mm-dd
-      if(d.match(/^\d{2}\/\d{2}\/\d{4}$/)){
-        var p = d.split('/');
-        d = p[2]+'-'+p[1]+'-'+p[0];
-      }
-      // d/m/yyyy naar yyyy-mm-dd
-      if(d.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)){
-        var p = d.split('/');
-        d = p[2]+'-'+(p[1].length<2?'0'+p[1]:p[1])+'-'+(p[0].length<2?'0'+p[0]:p[0]);
+    var d = String(r.datum);
+    // Verwijder het tijdsdeel (alles na de T)
+    if(d.indexOf('T') > -1) d = d.split('T')[0];
+    // dd/mm/yyyy naar yyyy-mm-dd
+    if(d.indexOf('/') > -1){
+      var p = d.split('/');
+      if(p.length === 3){
+        var dag = p[0].length < 2 ? '0'+p[0] : p[0];
+        var mnd = p[1].length < 2 ? '0'+p[1] : p[1];
+        var jaar = p[2].length === 4 ? p[2] : p[0];
+        // Bepaal of het dd/mm/yyyy of yyyy/mm/dd is
+        if(p[0].length === 4) d = p[0]+'-'+mnd+'-'+dag;
+        else d = jaar+'-'+mnd+'-'+dag;
       }
     }
-    console.log('Datum na verwerking:', d);
     document.getElementById('datum').value = d;
   }
   document.getElementById('edit-banner').style.display='flex';
