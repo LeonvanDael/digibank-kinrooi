@@ -861,38 +861,30 @@ function csvImporteren(){
       toonToast(toegevoegd+' records geïmporteerd!');
     } else {
       if(!confirm('WAARSCHUWING: de huidige database van '+DB.length+' records wordt volledig vervangen. Weet je het zeker?')) return;
-      fb.innerHTML='<span style="color:#ff9800">Bezig met vervangen... even geduld...</span>';
-      setSS('bezig','Google Sheets leegmaken...');
-      // Eerst Google Sheets leegmaken, dan alles opnieuw insturen
-      fetch(SURL, {method:'POST', body:JSON.stringify({actie:'wisAlles'})})
-        .then(function(r){ return r.json(); })
-        .then(function(d){
-          setSS('bezig','Nieuwe records insturen...');
-          // Stuur alle nieuwe records naar Sheets
-          var reeks = nieuweRecords.reduce(function(prom, r){
-            return prom.then(function(){
-              return stuur(r, 'nieuw');
-            });
-          }, Promise.resolve());
-          return reeks;
-        })
-        .then(function(){
-          DB = nieuweRecords;
-          saveD();
-          setSS('ok', DB.length + ' records hersteld uit backup');
-          fb.innerHTML='<span style="color:#1e6b35"><i class="ti ti-check"></i> Database vervangen door '+DB.length+' records uit de backup.</span>';
-          toonToast('Database hersteld uit backup!');
-          renderDB();
-        })
-        .catch(function(){
-          // Geen verbinding - alleen lokaal vervangen
-          DB = nieuweRecords;
-          saveD();
-          setSS('err','Lokaal hersteld - geen verbinding met Google Sheets');
-          fb.innerHTML='<span style="color:#e67e00"><i class="ti ti-alert-triangle"></i> Lokaal hersteld maar Google Sheets niet bijgewerkt. Ververs de pagina om te synchroniseren.</span>';
-          toonToast('Database lokaal hersteld!');
-          renderDB();
-        });
+      fb.innerHTML='<span style="color:#ff9800"><i class="ti ti-loader"></i> Bezig met vervangen... even geduld...</span>';
+      setSS('bezig','Backup terugzetten in Google Sheets...');
+      // Stuur alle records in één keer naar Sheets via vervangAlles
+      fetch(SURL, {
+        method:'POST',
+        body: JSON.stringify({actie:'vervangAlles', records: nieuweRecords})
+      })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        DB = nieuweRecords;
+        saveD();
+        setSS('ok', DB.length + ' records hersteld uit backup');
+        fb.innerHTML='<span style="color:#1e6b35"><i class="ti ti-check"></i> '+DB.length+' records hersteld uit backup. Google Sheets bijgewerkt!</span>';
+        toonToast('Backup succesvol teruggezet!');
+        renderDB();
+      })
+      .catch(function(){
+        DB = nieuweRecords;
+        saveD();
+        setSS('err','Lokaal hersteld — open Database tab om te synchroniseren');
+        fb.innerHTML='<span style="color:#e67e00"><i class="ti ti-alert-triangle"></i> Lokaal hersteld. Klik op Database tab om te synchroniseren met Google Sheets.</span>';
+        toonToast('Backup lokaal hersteld!');
+        renderDB();
+      });
     }
     document.getElementById('csv-upload').value='';
   };
