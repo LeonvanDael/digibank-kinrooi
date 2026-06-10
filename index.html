@@ -359,11 +359,26 @@ var DEF_USERS = [
 var gebruikers = JSON.parse(localStorage.getItem('db_g3') || JSON.stringify(DEF_USERS));
 var ik = null;
 var mijn = {};
+function normaliseerDatum(d){
+  if(!d) return '';
+  d = String(d).trim();
+  if(d.indexOf('T') > -1) d = d.split('T')[0];
+  // Controleer of het al yyyy-mm-dd is
+  if(/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
+  // Probeer te parsen
+  var dp = new Date(d);
+  if(!isNaN(dp.getTime())){
+    var j=dp.getFullYear(), m=dp.getMonth()+1, dd=dp.getDate();
+    return j+'-'+(m<10?'0'+m:m)+'-'+(dd<10?'0'+dd:dd);
+  }
+  return d;
+}
+
 var DB = (function(){
   var d = JSON.parse(localStorage.getItem('db_data') || '[]');
   return d.map(function(r){
     r.id = String(r.id);
-    if(r.datum && String(r.datum).indexOf('T')>-1) r.datum = String(r.datum).split('T')[0];
+    r.datum = normaliseerDatum(r.datum);
     return r;
   });
 })();
@@ -377,7 +392,8 @@ function saveG(){
     fetch(SURL,{method:'POST',body:JSON.stringify({actie:'slaGebruikersOp',gebruikers:gebruikers})}).catch(function(){});
   }
 }
-function normaliseerDatum(d){
+// normaliseerDatum hierboven gedefinieerd
+function normaliseerDatumDup(d){
   if(!d) return '';
   d = String(d);
   // Verwijder tijdsdeel
@@ -479,8 +495,6 @@ function maakBackup(){
   var tijd = nu.toLocaleTimeString('nl-BE',{hour:'2-digit',minute:'2-digit'}).replace(':','u');
   var hdr=['ID','Datum','Voornaam','Achternaam','Geslacht','Leeftijd','Postcode',
            'Apparaat','Categorie','Probleem','Oplossing','Status','Vrijwilliger','Opmerkingen'];
-  // Debug: toon eerste record
-  if(DB.length > 0) alert('DEBUG backup - eerste record id:['+DB[0].id+'] datum:['+DB[0].datum+']');
   var rows=DB.map(function(r){
     return[
       String(r.id||''),
@@ -713,7 +727,6 @@ function opslaan(){
   var ap=document.getElementById('apparaat').value;
   var cat=document.getElementById('categorie').value;
   var pr=document.getElementById('probleem').value.trim();
-  alert('DEBUG datum: [' + dt + '] datumveld: [' + document.getElementById('datum').value + ']');
   if(!vn||!an||!dt||!ap||!cat||!pr){alert('Vul minstens in: voornaam, achternaam, datum, apparaat, categorie en probleemomschrijving.');return;}
   // Zorg dat datum altijd yyyy-mm-dd formaat heeft
   var datumWaarde = String(dt||'').split('T')[0];
