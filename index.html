@@ -711,6 +711,7 @@ function opslaan(){
   var ap=document.getElementById('apparaat').value;
   var cat=document.getElementById('categorie').value;
   var pr=document.getElementById('probleem').value.trim();
+  alert('DEBUG datum: [' + dt + '] datumveld: [' + document.getElementById('datum').value + ']');
   if(!vn||!an||!dt||!ap||!cat||!pr){alert('Vul minstens in: voornaam, achternaam, datum, apparaat, categorie en probleemomschrijving.');return;}
   // Zorg dat datum altijd yyyy-mm-dd formaat heeft
   var datumWaarde = String(dt||'').split('T')[0];
