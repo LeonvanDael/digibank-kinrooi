@@ -751,6 +751,16 @@ function delRec(id){
 function clearAll(){
   if(!heeft('wissen')){alert('Geen rechten.');return;}
   if(!confirm('ALLE gegevens wissen? Dit kan niet ongedaan worden gemaakt!'))return;
+  // Verwijder elk record ook uit Google Sheets
+  setSS('bezig','Gegevens wissen...');
+  var beloftes = DB.map(function(r){
+    return stuur({id:r.id},'verwijder');
+  });
+  Promise.all(beloftes).then(function(){
+    setSS('ok','Database gewist');
+  }).catch(function(){
+    setSS('err','Fout bij wissen in Google Sheets');
+  });
   DB=[];saveD();renderDB();
 }
 function exportCSV(){
