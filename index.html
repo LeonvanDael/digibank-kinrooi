@@ -182,7 +182,7 @@ tr:hover td{background:#f0f7ff;cursor:pointer}
   <circle cx="150" cy="142" r="6" fill="#3d9be9"/>
 </svg>
   <div class="hm">
-    <h1 id="hdr-naam">Digihelper</h1>
+    <h1 id="hdr-naam">ITSME</h1>
     <div class="s1">BIB Kinrooi</div>
     <div class="s2"><i class="ti ti-clock"></i> Elke dinsdag van 15u30 tot 18u00</div>
   </div>
@@ -377,11 +377,26 @@ function saveG(){
     fetch(SURL,{method:'POST',body:JSON.stringify({actie:'slaGebruikersOp',gebruikers:gebruikers})}).catch(function(){});
   }
 }
+function normaliseerDatum(d){
+  if(!d) return '';
+  d = String(d);
+  // Verwijder tijdsdeel
+  if(d.indexOf('T') > -1) d = d.split('T')[0];
+  // Converteer "Wed Jun 10 2026..." formaat
+  if(isNaN(Date.parse(d)) === false && d.length > 10){
+    var dt = new Date(d);
+    var j = dt.getFullYear();
+    var m = dt.getMonth()+1;
+    var dd = dt.getDate();
+    return j+'-'+(m<10?'0'+m:m)+'-'+(dd<10?'0'+dd:dd);
+  }
+  return d;
+}
+
 function saveD(){
-  // Normaliseer alle IDs naar string voor opslaan
   DB = DB.map(function(r){
     r.id = String(r.id);
-    if(r.datum && String(r.datum).indexOf('T')>-1) r.datum = String(r.datum).split('T')[0];
+    r.datum = normaliseerDatum(r.datum);
     return r;
   });
   localStorage.setItem('db_data', JSON.stringify(DB));
@@ -520,7 +535,7 @@ function init(){
   document.body.style.overflow='';
   document.getElementById('hdr-datum').textContent=t.toLocaleDateString('nl-BE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   document.getElementById('hdr-user').textContent='Ingelogd als: '+ik;
-  document.getElementById('hdr-naam').textContent=ik+' — Digihelper';
+  document.getElementById('hdr-naam').textContent=ik+' — ITSME';
   // Tabs tonen/verbergen
   document.getElementById('t-beheer').classList.toggle('verborgen',!heeft('beheer'));
   document.getElementById('btn-wis-alles').style.display=heeft('wissen')?'':'none';
@@ -683,7 +698,22 @@ function opslaan(){
   var cat=document.getElementById('categorie').value;
   var pr=document.getElementById('probleem').value.trim();
   if(!vn||!an||!dt||!ap||!cat||!pr){alert('Vul minstens in: voornaam, achternaam, datum, apparaat, categorie en probleemomschrijving.');return;}
-  var data={voornaam:vn,achternaam:an,geslacht:document.getElementById('geslacht').value,leeftijd:document.getElementById('leeftijd').value,postcode:document.getElementById('postcode').value.trim(),datum:dt,vrijwilliger:document.getElementById('vrijwilliger').value.trim(),apparaat:ap,categorie:cat,probleem:pr,oplossing:document.getElementById('oplossing').value.trim(),status:document.getElementById('status').value,opmerkingen:document.getElementById('opmerkingen').value.trim()};
+  // Zorg dat datum altijd yyyy-mm-dd formaat heeft
+  var datumWaarde = String(dt||'').split('T')[0];
+  if(datumWaarde.indexOf('Wed') >= 0 || datumWaarde.indexOf('Mon') >= 0 ||
+     datumWaarde.indexOf('Tue') >= 0 || datumWaarde.indexOf('Thu') >= 0 ||
+     datumWaarde.indexOf('Fri') >= 0 || datumWaarde.indexOf('Sat') >= 0 ||
+     datumWaarde.indexOf('Sun') >= 0){
+    // Datum is een Date string, converteer naar yyyy-mm-dd
+    var d = new Date(datumWaarde);
+    if(!isNaN(d.getTime())){
+      var j = d.getFullYear();
+      var m = d.getMonth()+1;
+      var dd = d.getDate();
+      datumWaarde = j+'-'+(m<10?'0'+m:m)+'-'+(dd<10?'0'+dd:dd);
+    }
+  }
+  var data={voornaam:vn,achternaam:an,geslacht:document.getElementById('geslacht').value,leeftijd:document.getElementById('leeftijd').value,postcode:document.getElementById('postcode').value.trim(),datum:datumWaarde,vrijwilliger:document.getElementById('vrijwilliger').value.trim(),apparaat:ap,categorie:cat,probleem:pr,oplossing:document.getElementById('oplossing').value.trim(),status:document.getElementById('status').value,opmerkingen:document.getElementById('opmerkingen').value.trim()};
   if(editId){
     var idx=-1;for(var i=0;i<DB.length;i++){if(String(DB[i].id)===String(editId)){idx=i;break;}}
     if(idx!==-1){DB[idx]=Object.assign({},DB[idx],data);stuur(DB[idx],'update');}
