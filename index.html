@@ -446,35 +446,10 @@ function uitloggen(){
   if(!confirm('Afmelden?'))return;
   if(heeft('backup') && DB.length){
     maakBackup();
+    setTimeout(function(){ window.location.reload(); }, 600);
+  } else {
+    window.location.reload();
   }
-  ik=null; mijn={};
-  // Reset alle tabbladen naar beginstand
-  document.querySelectorAll('.pane').forEach(function(p){ p.classList.remove('on'); });
-  document.getElementById('pane-invoer').classList.add('on');
-  document.querySelectorAll('.tab').forEach(function(b){ b.classList.remove('on'); });
-  document.getElementById('t-invoer').classList.add('on');
-  // Leeg alle invoervelden
-  leeg();
-  // Verberg edit en known banners
-  document.getElementById('edit-banner').style.display='none';
-  document.getElementById('known-banner').style.display='none';
-  // Leeg database tabel en detail
-  document.getElementById('db-table').innerHTML='';
-  document.getElementById('rec-detail').innerHTML='';
-  // Leeg statistieken
-  document.getElementById('stats-content').innerHTML='';
-  // Reset sync balk
-  document.getElementById('sdot').className='sync-dot';
-  document.getElementById('stxt').textContent='';
-  document.getElementById('stijd').textContent='';
-  // Verberg hoofdapp en toon login
-  document.getElementById('app').style.display='none';
-  document.getElementById('login-wrap').style.display='flex';
-  document.body.style.overflow='hidden';
-  document.getElementById('lu').value='';
-  document.getElementById('lp').value='';
-  // Zet focus op gebruikersnaam veld
-  setTimeout(function(){ document.getElementById('lu').focus(); }, 100);
 }
 
 function init(){
