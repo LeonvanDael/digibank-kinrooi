@@ -462,8 +462,20 @@ function maakBackup(){
   var nu = new Date();
   var datum = nu.toISOString().split('T')[0];
   var tijd = nu.toLocaleTimeString('nl-BE',{hour:'2-digit',minute:'2-digit'}).replace(':','u');
-  var hdr=['Datum','Voornaam','Achternaam','Geslacht','Leeftijd','Postcode','Apparaat','Categorie','Probleem','Oplossing','Status','Vrijwilliger','Opmerkingen'];
-  var rows=DB.map(function(r){return[r.datum,r.voornaam,r.achternaam,r.geslacht,r.leeftijd,r.postcode,r.apparaat,r.categorie,'"'+(r.probleem||'').replace(/"/g,'""')+'"','"'+(r.oplossing||'').replace(/"/g,'""')+'"',r.status,r.vrijwilliger,'"'+(r.opmerkingen||'').replace(/"/g,'""')+'"'].join(',');});
+  var hdr=['ID','Datum','Voornaam','Achternaam','Geslacht','Leeftijd','Postcode',
+           'Apparaat','Categorie','Probleem','Oplossing','Status','Vrijwilliger','Opmerkingen'];
+  var rows=DB.map(function(r){
+    return[
+      String(r.id||''),
+      String(r.datum||'').split('T')[0],
+      r.voornaam||'', r.achternaam||'', r.geslacht||'', r.leeftijd||'',
+      r.postcode||'', r.apparaat||'', r.categorie||'',
+      '"'+(r.probleem||'').replace(/"/g,'""')+'"',
+      '"'+(r.oplossing||'').replace(/"/g,'""')+'"',
+      r.status||'', r.vrijwilliger||'',
+      '"'+(r.opmerkingen||'').replace(/"/g,'""')+'"'
+    ].join(',');
+  });
   var csv=[hdr.join(',')].concat(rows).join(String.fromCharCode(13,10));
   var a=document.createElement('a');
   a.href='data:text/csv;charset=utf-8,﻿'+encodeURIComponent(csv);
