@@ -582,8 +582,20 @@ function bewerkRecord(id){
   var r=null;for(var i=0;i<DB.length;i++){if(DB[i].id===id){r=DB[i];break;}}
   if(!r)return;
   editId=id;
-  var velden=['voornaam','achternaam','geslacht','leeftijd','postcode','datum','vrijwilliger','apparaat','categorie','probleem','oplossing','status','opmerkingen'];
+  var velden=['voornaam','achternaam','geslacht','leeftijd','postcode','vrijwilliger','apparaat','categorie','probleem','oplossing','status','opmerkingen'];
   velden.forEach(function(v){document.getElementById(v).value=r[v]||'';});
+  // Datum apart behandelen - converteer naar yyyy-mm-dd formaat voor het datumveld
+  if(r.datum){
+    var d = String(r.datum);
+    // Als datum een Date object is of timestamp
+    if(d.indexOf('T') > -1) d = d.split('T')[0];
+    // Als datum dd/mm/yyyy formaat heeft, converteer naar yyyy-mm-dd
+    if(d.indexOf('/') > -1){
+      var parts = d.split('/');
+      d = parts[2]+'-'+parts[1]+'-'+parts[0];
+    }
+    document.getElementById('datum').value = d;
+  }
   document.getElementById('edit-banner').style.display='flex';
   document.getElementById('edit-txt').textContent='Bewerkmodus — '+r.voornaam+' '+r.achternaam+' ('+r.datum+')';
   document.getElementById('opslaan-btn').innerHTML='<i class="ti ti-device-floppy"></i> Wijzigingen opslaan';
