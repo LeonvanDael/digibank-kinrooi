@@ -822,13 +822,33 @@ function clearAll(){
 }
 function exportCSV(){
   if(!heeft('export')){alert('Geen rechten.');return;}
-  var hdr=['Datum','Voornaam','Achternaam','Geslacht','Leeftijd','Postcode','Apparaat','Categorie','Probleem','Oplossing','Status','Vrijwilliger','Opmerkingen'];
-  var rows=DB.map(function(r){return[r.datum,r.voornaam,r.achternaam,r.geslacht,r.leeftijd,r.postcode,r.apparaat,r.categorie,'"'+(r.probleem||'').replace(/"/g,'""')+'"','"'+(r.oplossing||'').replace(/"/g,'""')+'"',r.status,r.vrijwilliger,'"'+(r.opmerkingen||'').replace(/"/g,'""')+'"'].join(',');});
+  var hdr=['ID','Datum','Voornaam','Achternaam','Geslacht','Leeftijd','Postcode','Apparaat','Categorie','Probleem','Oplossing','Status','Vrijwilliger','Opmerkingen'];
+  var rows=DB.map(function(r){
+    // Zorg dat ID altijd een getal is en datum altijd yyyy-mm-dd
+    var rid = String(r.id||'');
+    var rdat = String(r.datum||'').split('T')[0];
+    return[
+      rid,
+      rdat,
+      r.voornaam||'',
+      r.achternaam||'',
+      r.geslacht||'',
+      r.leeftijd||'',
+      r.postcode||'',
+      r.apparaat||'',
+      r.categorie||'',
+      '"'+(r.probleem||'').replace(/"/g,'""')+'"',
+      '"'+(r.oplossing||'').replace(/"/g,'""')+'"',
+      r.status||'',
+      r.vrijwilliger||'',
+      '"'+(r.opmerkingen||'').replace(/"/g,'""')+'"'
+    ].join(',');
+  });
   var lijnen=[hdr.join(',')].concat(rows);
   var csv=lijnen.join(String.fromCharCode(13,10));
   var a=document.createElement('a');
   a.href='data:text/csv;charset=utf-8,﻿'+encodeURIComponent(csv);
-  a.download='digibank_'+new Date().toISOString().split('T')[0]+'.csv';
+  a.download='digibank_backup_'+new Date().toISOString().split('T')[0]+'.csv';
   a.click();
 }
 
@@ -871,12 +891,20 @@ function csvImporteren(){
       cols = cols.map(function(c){ return c.replace(/^"|"$/g,'').replace(/""/g,'"').trim(); });
       if(cols.length < 8) continue;
       nieuweRecords.push({
-        id:       String(cols[0] ? cols[0] : Date.now()+i),
-        datum:    cols[1]||'', voornaam: cols[1]||'', achternaam: cols[2]||'',
-        geslacht: cols[3]||'', leeftijd: cols[4]||'', postcode:   cols[5]||'',
-        apparaat: cols[6]||'', categorie:cols[7]||'', probleem:   cols[8]||'',
-        oplossing:cols[9]||'', status:   cols[10]||'afgerond',
-        vrijwilliger:cols[11]||'', opmerkingen:cols[12]||''
+        id:       String((cols[0]||'').trim() ? cols[0].trim() : Date.now()+i),
+        datum:    String(cols[1]||'').trim().split('T')[0],
+        voornaam: (cols[2]||'').trim(),
+        achternaam:(cols[3]||'').trim(),
+        geslacht: (cols[4]||'').trim(),
+        leeftijd: (cols[5]||'').trim(),
+        postcode: (cols[6]||'').trim(),
+        apparaat: (cols[7]||'').trim(),
+        categorie:(cols[8]||'').trim(),
+        probleem: (cols[9]||'').trim().replace(/^"|"$/g,'').replace(/""/g,'"'),
+        oplossing:(cols[10]||'').trim().replace(/^"|"$/g,'').replace(/""/g,'"'),
+        status:   (cols[11]||'afgerond').trim(),
+        vrijwilliger:(cols[12]||'').trim(),
+        opmerkingen:(cols[13]||'').trim().replace(/^"|"$/g,'').replace(/""/g,'"')
       });
     }
     if(!nieuweRecords.length){ fb.innerHTML='<span style="color:#8a1a1a">Geen geldige records gevonden in het bestand.</span>'; return; }
