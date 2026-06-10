@@ -479,6 +479,8 @@ function maakBackup(){
   var tijd = nu.toLocaleTimeString('nl-BE',{hour:'2-digit',minute:'2-digit'}).replace(':','u');
   var hdr=['ID','Datum','Voornaam','Achternaam','Geslacht','Leeftijd','Postcode',
            'Apparaat','Categorie','Probleem','Oplossing','Status','Vrijwilliger','Opmerkingen'];
+  // Debug: toon eerste record
+  if(DB.length > 0) alert('DEBUG backup - eerste record id:['+DB[0].id+'] datum:['+DB[0].datum+']');
   var rows=DB.map(function(r){
     return[
       String(r.id||''),
