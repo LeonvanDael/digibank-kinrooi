@@ -399,8 +399,15 @@ function lp(){
     for(var i=0;i<gebruikers.length;i++){if(gebruikers[i].user.toLowerCase()===u&&gebruikers[i].pass===p){m=gebruikers[i];break;}}
     if(m){
       ik=m.user; mijn=m.rechten||ROL[m.rol]||ROL.vrijwilliger;
-      document.getElementById('login-wrap').style.display='none';
-      document.getElementById('app').style.display='block';
+      var lw = document.getElementById('login-wrap');
+      lw.style.display='none';
+      lw.style.position='';
+      lw.style.height='';
+      lw.style.zIndex='';
+      var ap = document.getElementById('app');
+      ap.style.display='block';
+      ap.style.height='';
+      ap.style.overflow='';
       init();
     } else {
       document.getElementById('lerr').style.display='block';
@@ -415,8 +422,15 @@ function lp(){
     for(var i=0;i<gebruikers.length;i++){if(gebruikers[i].user.toLowerCase()===u&&gebruikers[i].pass===p){m=gebruikers[i];break;}}
     if(m){
       ik=m.user; mijn=m.rechten||ROL[m.rol]||ROL.vrijwilliger;
-      document.getElementById('login-wrap').style.display='none';
-      document.getElementById('app').style.display='block';
+      var lw = document.getElementById('login-wrap');
+      lw.style.display='none';
+      lw.style.position='';
+      lw.style.height='';
+      lw.style.zIndex='';
+      var ap = document.getElementById('app');
+      ap.style.display='block';
+      ap.style.height='';
+      ap.style.overflow='';
       init();
     } else {
       document.getElementById('lerr').style.display='block';
@@ -444,12 +458,33 @@ function maakBackup(){
 
 function uitloggen(){
   if(!confirm('Afmelden?'))return;
-  if(heeft('backup') && DB.length){
-    maakBackup();
-    setTimeout(function(){ window.location.reload(); }, 600);
-  } else {
-    window.location.reload();
-  }
+  if(heeft('backup') && DB.length) maakBackup();
+  ik=null; mijn={};
+  // Verberg app volledig
+  var appEl = document.getElementById('app');
+  appEl.style.display='none';
+  appEl.style.height='0';
+  appEl.style.overflow='hidden';
+  // Reset login scherm
+  var loginEl = document.getElementById('login-wrap');
+  loginEl.style.display='flex';
+  loginEl.style.position='fixed';
+  loginEl.style.top='0';
+  loginEl.style.left='0';
+  loginEl.style.width='100%';
+  loginEl.style.height='100%';
+  loginEl.style.zIndex='9999';
+  loginEl.style.background='var(--bg)';
+  // Leeg invoervelden
+  document.getElementById('lu').value='';
+  document.getElementById('lp').value='';
+  document.getElementById('lerr').style.display='none';
+  // Reset login knop
+  var btn = document.querySelector('.login-btn');
+  btn.innerHTML='<i class="ti ti-login"></i> Aanmelden';
+  btn.disabled=false;
+  // Focus op gebruikersnaam
+  setTimeout(function(){ document.getElementById('lu').focus(); },100);
 }
 
 function init(){
