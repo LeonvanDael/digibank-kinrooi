@@ -809,17 +809,34 @@ function csvImporteren(){
     // Vraag wat te doen
     var keuze = window.confirm(nieuweRecords.length + ' records gevonden.\n\n' +'Huidige database heeft ' + DB.length + ' records.\n\n' +'OK = samenvoegen (duplicaten overgeslagen)\n' +'Annuleren = bestaande database vervangen door CSV');
     if(keuze){
-      // Samenvoegen - duplicaten op basis van id overslaan
+      // Samenvoegen - duplicaten op basis van id EN voornaam+achternaam+datum overslaan
       var bestaandeIds = {};
-      DB.forEach(function(r){ bestaandeIds[r.id] = true; });
+      var bestaandeSleutels = {};
+      DB.forEach(function(r){
+        bestaandeIds[String(r.id)] = true;
+        var sleutel = (r.voornaam+'|'+r.achternaam+'|'+String(r.datum).split('T')[0]).toLowerCase();
+        bestaandeSleutels[sleutel] = true;
+      });
       var toegevoegd = 0;
+      var dubbel = 0;
       nieuweRecords.forEach(function(r){
-        if(!bestaandeIds[r.id]){ DB.push(r); toegevoegd++; }
+        var rId = String(r.id);
+        var rSleutel = (r.voornaam+'|'+r.achternaam+'|'+String(r.datum).split('T')[0]).toLowerCase();
+        if(!bestaandeIds[rId] && !bestaandeSleutels[rSleutel]){
+          DB.push(r); toegevoegd++;
+          bestaandeIds[rId] = true;
+          bestaandeSleutels[rSleutel] = true;
+        } else {
+          dubbel++;
+        }
       });
       saveD();
-      // Stuur elk nieuw record ook naar Sheets
-      nieuweRecords.forEach(function(r){ if(!bestaandeIds[r.id]) stuur(r,'nieuw'); });
-      fb.innerHTML='<span style="color:#1e6b35"><i class="ti ti-check"></i> '+toegevoegd+' nieuwe records toegevoegd. '+( nieuweRecords.length - toegevoegd)+' duplicaten overgeslagen.</span>';
+      nieuweRecords.forEach(function(r){
+        var rId = String(r.id);
+        var rSleutel = (r.voornaam+'|'+r.achternaam+'|'+String(r.datum).split('T')[0]).toLowerCase();
+        if(bestaandeIds[rId]) stuur(r,'nieuw');
+      });
+      fb.innerHTML='<span style="color:#1e6b35"><i class="ti ti-check"></i> '+toegevoegd+' nieuwe records toegevoegd. '+dubbel+' duplicaten overgeslagen.</span>';
       toonToast(toegevoegd+' records geïmporteerd!');
     } else {
       if(!confirm('WAARSCHUWING: de huidige database van '+DB.length+' records wordt volledig vervangen. Weet je het zeker?')) return;
