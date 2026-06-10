@@ -359,7 +359,14 @@ var DEF_USERS = [
 var gebruikers = JSON.parse(localStorage.getItem('db_g3') || JSON.stringify(DEF_USERS));
 var ik = null;
 var mijn = {};
-var DB = JSON.parse(localStorage.getItem('db_data') || '[]');
+var DB = (function(){
+  var d = JSON.parse(localStorage.getItem('db_data') || '[]');
+  return d.map(function(r){
+    r.id = String(r.id);
+    if(r.datum && String(r.datum).indexOf('T')>-1) r.datum = String(r.datum).split('T')[0];
+    return r;
+  });
+})();
 var editId = null;
 var SURL = localStorage.getItem('db_surl') || 'https://script.google.com/macros/s/AKfycbzbnuQ4qJNifb7EvWgR3MMlJxUGW_l8Tkp24HhILdKqeexxTzJhE8Fjw-g9BeOZZw9VJQ/exec';
 
@@ -370,7 +377,15 @@ function saveG(){
     fetch(SURL,{method:'POST',body:JSON.stringify({actie:'slaGebruikersOp',gebruikers:gebruikers})}).catch(function(){});
   }
 }
-function saveD(){ localStorage.setItem('db_data', JSON.stringify(DB)); }
+function saveD(){
+  // Normaliseer alle IDs naar string voor opslaan
+  DB = DB.map(function(r){
+    r.id = String(r.id);
+    if(r.datum && String(r.datum).indexOf('T')>-1) r.datum = String(r.datum).split('T')[0];
+    return r;
+  });
+  localStorage.setItem('db_data', JSON.stringify(DB));
+}
 function heeft(r){ return mijn[r]===true; }
 
 // Laad gebruikers uit Google Sheets
@@ -674,37 +689,53 @@ function renderDB(){
   var fs=document.getElementById('f-sta').value;
   var rows=DB.filter(function(r){
     var txt=(r.voornaam+r.achternaam+r.postcode+r.probleem+r.categorie).toLowerCase();
-    return(!q||txt.indexOf(q)>=0)&&(!fa||r.apparaat.toLowerCase().indexOf(fa)>=0)&&(!fs||r.status===fs);
-  }).sort(function(a,b){return b.datum.localeCompare(a.datum);});
+    return(!q||txt.indexOf(q)>=0)&&(!fa||(r.apparaat||'').toLowerCase().indexOf(fa)>=0)&&(!fs||r.status===fs);
+  }).sort(function(a,b){return String(b.datum).localeCompare(String(a.datum));});
   var el=document.getElementById('db-table');
   document.getElementById('rec-detail').innerHTML='';
-  if(!rows.length){el.innerHTML='<div style="text-align:center;padding:2rem;color:#888"><i class="ti ti-inbox" style="font-size:30px;display:block;margin-bottom:8px;color:#b0c4d8"></i>Geen resultaten</div>';return;}
+  if(!rows.length){
+    el.innerHTML='<div style="text-align:center;padding:2rem;color:#888"><i class="ti ti-inbox" style="font-size:30px;display:block;margin-bottom:8px;color:#b0c4d8"></i>Geen resultaten</div>';
+    return;
+  }
   var kb=heeft('bewerken');
   var kv=heeft('verwijder');
-  el.innerHTML='<table><thead><tr>'
+  var tbl='<table><thead><tr>'
     +'<th style="width:80px">Datum</th><th style="width:130px">Naam</th><th style="width:32px">G</th>'
     +'<th style="width:68px">Leeftijd</th><th style="width:55px">PC</th>'
     +'<th style="width:115px">Apparaat</th><th style="width:108px">Categorie</th>'
     +'<th style="width:80px">Status</th><th style="width:52px"></th>'
-    +'</tr></thead><tbody>'
-    +rows.map(function(r){
-      var acties='';
-      if(kb) acties+='<button style="border:none;background:transparent;color:var(--blauw);cursor:pointer;font-size:15px;padding:2px 4px" onclick="event.stopPropagation();bewerkRecord('+r.id+')" title="Bewerken"><i class="ti ti-pencil"></i></button>';
-      if(kv) acties+='<button style="border:none;background:transparent;color:#c0392b;cursor:pointer;font-size:15px;padding:2px 4px" onclick="event.stopPropagation();delRec('+r.id+')" title="Verwijderen"><i class="ti ti-trash"></i></button>';
-      return'<tr onclick="showDetail('+r.id+')">'
-        +'<td>'+r.datum+'</td>'
-        +'<td>'+r.voornaam+' '+r.achternaam+'</td>'
-        +'<td><span class="badge '+(r.geslacht==='m'?'b-m':r.geslacht==='v'?'b-v':'')+'">'+(r.geslacht==='m'?'M':r.geslacht==='v'?'V':'?')+'</span></td>'
-        +'<td style="font-size:11px">'+(r.leeftijd||'&mdash;')+'</td>'
-        +'<td>'+(r.postcode||'&mdash;')+'</td>'
-        +'<td>'+abadge(r.apparaat)+'</td>'
-        +'<td style="font-size:11px">'+(r.categorie||'&mdash;')+'</td>'
-        +'<td>'+sbadge(r.status)+'</td>'
-        +'<td style="white-space:nowrap">'+acties+'</td>'
-        +'</tr>';
-    }).join('')
-    +'</tbody></table>'
-    +'<div style="font-size:12px;color:#888;padding:7px 8px">'+rows.length+' record'+(rows.length!==1?'s':'')+' &mdash; klik op rij voor details</div>';
+    +'</tr></thead><tbody>';
+  rows.forEach(function(r){
+    var rid = String(r.id);
+    var gbadge = '<span class="badge '+(r.geslacht==='m'?'b-m':r.geslacht==='v'?'b-v':'')+'">'+(r.geslacht==='m'?'M':r.geslacht==='v'?'V':'?')+'</span>';
+    var acties = '';
+    if(kb) acties += '<button class="db-bew-btn" title="Bewerken" style="border:none;background:transparent;color:var(--blauw);cursor:pointer;font-size:15px;padding:2px 4px"><i class="ti ti-pencil"></i></button>';
+    if(kv) acties += '<button class="db-del-btn" title="Verwijderen" style="border:none;background:transparent;color:#c0392b;cursor:pointer;font-size:15px;padding:2px 4px"><i class="ti ti-trash"></i></button>';
+    tbl += '<tr class="db-rij">'
+      +'<td>'+String(r.datum).split('T')[0]+'</td>'
+      +'<td>'+r.voornaam+' '+r.achternaam+'</td>'
+      +'<td>'+gbadge+'</td>'
+      +'<td style="font-size:11px">'+(r.leeftijd||'&mdash;')+'</td>'
+      +'<td>'+(r.postcode||'&mdash;')+'</td>'
+      +'<td>'+abadge(r.apparaat)+'</td>'
+      +'<td style="font-size:11px">'+(r.categorie||'&mdash;')+'</td>'
+      +'<td>'+sbadge(r.status)+'</td>'
+      +'<td style="white-space:nowrap">'+acties+'</td>'
+      +'</tr>';
+  });
+  tbl += '</tbody></table><div style="font-size:12px;color:#888;padding:7px 8px">'+rows.length+' record'+(rows.length!==1?'s':'')+' &mdash; klik op rij voor details</div>';
+  el.innerHTML = tbl;
+  // Voeg event listeners toe na het renderen
+  var rijen = el.querySelectorAll('.db-rij');
+  rijen.forEach(function(rij, idx){
+    var rid = String(rows[idx].id);
+    rij.style.cursor='pointer';
+    rij.addEventListener('click', function(){ showDetail(rid); });
+    var bewBtn = rij.querySelector('.db-bew-btn');
+    if(bewBtn) bewBtn.addEventListener('click', function(e){ e.stopPropagation(); bewerkRecord(rid); });
+    var delBtn = rij.querySelector('.db-del-btn');
+    if(delBtn) delBtn.addEventListener('click', function(e){ e.stopPropagation(); delRec(rid); });
+  });
 }
 
 function showDetail(id){
