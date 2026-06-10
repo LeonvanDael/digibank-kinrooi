@@ -751,16 +751,20 @@ function delRec(id){
 function clearAll(){
   if(!heeft('wissen')){alert('Geen rechten.');return;}
   if(!confirm('ALLE gegevens wissen? Dit kan niet ongedaan worden gemaakt!'))return;
-  // Verwijder elk record ook uit Google Sheets
-  setSS('bezig','Gegevens wissen...');
-  var beloftes = DB.map(function(r){
-    return stuur({id:r.id},'verwijder');
-  });
-  Promise.all(beloftes).then(function(){
-    setSS('ok','Database gewist');
-  }).catch(function(){
-    setSS('err','Fout bij wissen in Google Sheets');
-  });
+  setSS('bezig','Gegevens wissen in Google Sheets...');
+  // Wis alles in één keer via Apps Script
+  fetch(SURL, {method:'POST', body:JSON.stringify({actie:'wisAlles'})})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d.status==='ok'){
+        setSS('ok','Database gewist');
+      } else {
+        setSS('err','Fout bij wissen');
+      }
+    })
+    .catch(function(){
+      setSS('err','Geen verbinding met Google Sheets');
+    });
   DB=[];saveD();renderDB();
 }
 function exportCSV(){
