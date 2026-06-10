@@ -182,7 +182,7 @@ tr:hover td{background:#f0f7ff;cursor:pointer}
   <circle cx="150" cy="142" r="6" fill="#3d9be9"/>
 </svg>
   <div class="hm">
-    <h1 id="hdr-naam">ITSME</h1>
+    <h1 id="hdr-naam">Digihelper</h1>
     <div class="s1">BIB Kinrooi</div>
     <div class="s2"><i class="ti ti-clock"></i> Elke dinsdag van 15u30 tot 18u00</div>
   </div>
@@ -251,7 +251,7 @@ tr:hover td{background:#f0f7ff;cursor:pointer}
           <optgroup label="Connectiviteit"><option>Internet / wifi</option><option>E-mail instellen</option><option>Bluetooth / koppelen</option></optgroup>
           <optgroup label="Software"><option>Installeren / updates</option><option>Virus / malware</option><option>Wachtwoord vergeten</option><option>Apps en instellingen</option></optgroup>
           <optgroup label="Hardware"><option>Scherm / display</option><option>Batterij / opladen</option><option>Printer / afdrukken</option><option>Toetsenbord / muis</option></optgroup>
-          <optgroup label="Online diensten"><option>Bankieren / DigiD</option><option>Overheidswebsite (mijnoverheid.be)</option><option>Sociale media</option><option>Videobellen (Zoom / Teams)</option><option>Online bestellen</option></optgroup>
+          <optgroup label="Online diensten"><option>Bankieren / ITSME</option><option>Overheidswebsite (mijnoverheid.be)</option><option>Sociale media</option><option>Videobellen (Zoom / Teams)</option><option>Online bestellen</option></optgroup>
           <optgroup label="Overig"><option>Opslag / back-up</option><option>Fotos / bestanden</option><option>Algemene uitleg</option><option>Overig</option></optgroup>
         </select>
       </div>
@@ -535,7 +535,7 @@ function init(){
   document.body.style.overflow='';
   document.getElementById('hdr-datum').textContent=t.toLocaleDateString('nl-BE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   document.getElementById('hdr-user').textContent='Ingelogd als: '+ik;
-  document.getElementById('hdr-naam').textContent=ik+' — ITSME';
+  document.getElementById('hdr-naam').textContent=ik+' — Digihelper';
   // Tabs tonen/verbergen
   document.getElementById('t-beheer').classList.toggle('verborgen',!heeft('beheer'));
   document.getElementById('btn-wis-alles').style.display=heeft('wissen')?'':'none';
