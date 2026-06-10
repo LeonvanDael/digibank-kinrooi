@@ -522,7 +522,14 @@ function laadVanSheets(){
   if(!SURL){setSS('err','Geen URL');return Promise.reject();}
   setSS('bezig','Laden...');
   return fetch(SURL+'?actie=lees').then(function(r){return r.json();}).then(function(d){
-    if(d.records){DB=d.records;saveD();setSS('ok',DB.length+' records');renderDB();}
+    if(d.records){
+      DB=d.records.map(function(r){
+        r.id = String(r.id);
+        if(r.datum && r.datum.indexOf('T')>-1) r.datum = r.datum.split('T')[0];
+        return r;
+      });
+      saveD();setSS('ok',DB.length+' records');renderDB();
+    }
   }).catch(function(){setSS('err','Geen verbinding — lokale data');return Promise.reject();});
 }
 function stuur(rec,actie){
@@ -579,7 +586,7 @@ document.addEventListener('click',function(e){if(!e.target.closest('.ac-wrap'))d
 // BEWERKEN
 function bewerkRecord(id){
   if(!heeft('bewerken')){alert('Geen rechten.');return;}
-  var r=null;for(var i=0;i<DB.length;i++){if(DB[i].id===id){r=DB[i];break;}}
+  var r=null;for(var i=0;i<DB.length;i++){if(String(DB[i].id)===String(id)){r=DB[i];break;}}
   if(!r)return;
   editId=id;
   var velden=['voornaam','achternaam','geslacht','leeftijd','postcode','vrijwilliger','apparaat','categorie','probleem','oplossing','status','opmerkingen'];
@@ -629,7 +636,7 @@ function opslaan(){
   if(!vn||!an||!dt||!ap||!cat||!pr){alert('Vul minstens in: voornaam, achternaam, datum, apparaat, categorie en probleemomschrijving.');return;}
   var data={voornaam:vn,achternaam:an,geslacht:document.getElementById('geslacht').value,leeftijd:document.getElementById('leeftijd').value,postcode:document.getElementById('postcode').value.trim(),datum:dt,vrijwilliger:document.getElementById('vrijwilliger').value.trim(),apparaat:ap,categorie:cat,probleem:pr,oplossing:document.getElementById('oplossing').value.trim(),status:document.getElementById('status').value,opmerkingen:document.getElementById('opmerkingen').value.trim()};
   if(editId){
-    var idx=-1;for(var i=0;i<DB.length;i++){if(DB[i].id===editId){idx=i;break;}}
+    var idx=-1;for(var i=0;i<DB.length;i++){if(String(DB[i].id)===String(editId)){idx=i;break;}}
     if(idx!==-1){DB[idx]=Object.assign({},DB[idx],data);stuur(DB[idx],'update');}
     saveD();setSS('ok','Wijziging opgeslagen');toonToast('Record van '+vn+' '+an+' bijgewerkt!');annuleerEdit();
   } else {
@@ -701,7 +708,7 @@ function renderDB(){
 }
 
 function showDetail(id){
-  var r=null;for(var i=0;i<DB.length;i++){if(DB[i].id===id){r=DB[i];break;}}
+  var r=null;for(var i=0;i<DB.length;i++){if(String(DB[i].id)===String(id)){r=DB[i];break;}}
   if(!r)return;
   var prev=DB.filter(function(x){return x.voornaam===r.voornaam&&x.achternaam===r.achternaam&&x.id!==r.id;}).sort(function(a,b){return b.datum.localeCompare(a.datum);});
   var ph='';
@@ -735,7 +742,7 @@ function showDetail(id){
 function delRec(id){
   if(!heeft('verwijder')){alert('Geen rechten om te verwijderen.');return;}
   if(!confirm('Dit bezoek definitief verwijderen?'))return;
-  DB=DB.filter(function(x){return x.id!==id;});saveD();
+  DB=DB.filter(function(x){return String(x.id)!==String(id);});saveD();
   stuur({id:id},'verwijder');
   document.getElementById('rec-detail').innerHTML='';
   renderDB();
@@ -797,8 +804,8 @@ function csvImporteren(){
       cols = cols.map(function(c){ return c.replace(/^"|"$/g,'').replace(/""/g,'"').trim(); });
       if(cols.length < 8) continue;
       nieuweRecords.push({
-        id:       cols[0] ? parseInt(cols[0]) || Date.now()+i : Date.now()+i,
-        datum:    cols[0]||'', voornaam: cols[1]||'', achternaam: cols[2]||'',
+        id:       String(cols[0] ? cols[0] : Date.now()+i),
+        datum:    cols[1]||'', voornaam: cols[1]||'', achternaam: cols[2]||'',
         geslacht: cols[3]||'', leeftijd: cols[4]||'', postcode:   cols[5]||'',
         apparaat: cols[6]||'', categorie:cols[7]||'', probleem:   cols[8]||'',
         oplossing:cols[9]||'', status:   cols[10]||'afgerond',
