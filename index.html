@@ -580,8 +580,16 @@ function acSearch(){
   var seen={};var matches=[];
   DB.forEach(function(r){var k=r.voornaam+'|'+r.achternaam;if(!seen[k]&&(r.voornaam.toLowerCase().indexOf(q)===0||r.achternaam.toLowerCase().indexOf(q)>=0)){seen[k]=true;matches.push(r);}});
   if(!matches.length){list.style.display='none';return;}
-  list.innerHTML=matches.slice(0,6).map(function(r){return'<div class="ac-item" onclick="fillPerson('+r.id+')"><strong>'+r.voornaam+' '+r.achternaam+'</strong><span> &middot; '+(r.postcode||'')+' &middot; '+(r.leeftijd||'')+'</span></div>';}).join('');
+  list.innerHTML=matches.slice(0,6).map(function(r){
+    return'<div class="ac-item" data-id="'+String(r.id)+'"><strong>'+r.voornaam+' '+r.achternaam+'</strong><span> &middot; '+(r.postcode||'')+' &middot; '+(r.leeftijd||'')+'</span></div>';
+  }).join('');
   list.style.display='block';
+  // Voeg event listeners toe
+  list.querySelectorAll('.ac-item').forEach(function(el){
+    el.addEventListener('click', function(){
+      fillPerson(this.dataset.id);
+    });
+  });
 }
 function fillPerson(id){
   // Zoek meest recent bezoek van deze persoon
