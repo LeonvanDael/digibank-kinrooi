@@ -350,13 +350,24 @@ var DB = [];
 var editId = null;
 
 function saveD() {
-  DB = DB.map(function(r) { r.id = String(r.id); r.datum = datumFix(r.datum); return r; });
+  DB = DB.map(function(r) {
+    r.id = String(r.id);
+    var d = datumFix(r.datum);
+    if (d) r.datum = d;
+    // Anders: bewaar originele waarde
+    return r;
+  });
   localStorage.setItem('db_data4', JSON.stringify(DB));
 }
 
 function laadLokaal() {
   var d = JSON.parse(localStorage.getItem('db_data4') || '[]');
-  DB = d.map(function(r) { r.id = String(r.id); r.datum = datumFix(r.datum); return r; });
+  DB = d.map(function(r) {
+    r.id = String(r.id);
+    var df = datumFix(r.datum);
+    if (df) r.datum = df;
+    return r;
+  });
 }
 
 // ═══════════════════════════════════════
