@@ -548,7 +548,8 @@ function annuleerEdit() {
 function opslaan() {
   var vn = document.getElementById('voornaam').value.trim();
   var an = document.getElementById('achternaam').value.trim();
-  var dt = document.getElementById('datum').value;
+  var dt = datumFix(document.getElementById('datum').value);
+  if (!dt) dt = new Date().toISOString().split('T')[0];
   var ap = document.getElementById('apparaat').value;
   var cat = document.getElementById('categorie').value;
   var pr = document.getElementById('probleem').value.trim();
