@@ -452,7 +452,7 @@ function toonLoginFout() {
 // ═══════════════════════════════════════
 function init() {
   var today = new Date();
-  var vandaag = today.toISOString().split('T')[0];
+  var vandaag = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
   document.getElementById('datum').value = vandaag;
   document.getElementById('hdr-datum').textContent = today.toLocaleDateString('nl-BE', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
   document.getElementById('hdr-user').textContent = 'Ingelogd als: ' + ik;
@@ -511,7 +511,9 @@ function fillPerson(id) {
   document.getElementById('geslacht').value = r.geslacht || '';
   document.getElementById('leeftijd').value = r.leeftijd || '';
   document.getElementById('postcode').value = r.postcode || '';
-  document.getElementById('datum').value = new Date().toISOString().split('T')[0];
+  var nu = new Date();
+  var lokaalDatum = nu.getFullYear() + '-' + String(nu.getMonth()+1).padStart(2,'0') + '-' + String(nu.getDate()).padStart(2,'0');
+  document.getElementById('datum').value = lokaalDatum;
   document.getElementById('ac-list').style.display = 'none';
   var v = DB.filter(function(x) { return x.voornaam === r.voornaam && x.achternaam === r.achternaam; }).length;
   document.getElementById('known-txt').textContent = 'Bekende bezoeker \u2014 ' + v + ' eerder bezoek' + (v !== 1 ? 'en' : '') + ' in database';
@@ -553,7 +555,7 @@ function opslaan() {
   var vn = document.getElementById('voornaam').value.trim();
   var an = document.getElementById('achternaam').value.trim();
   var dt = datumFix(document.getElementById('datum').value);
-  if (!dt) dt = new Date().toISOString().split('T')[0];
+  if (!dt) var _n=new Date(); dt=_n.getFullYear()+'-'+String(_n.getMonth()+1).padStart(2,'0')+'-'+String(_n.getDate()).padStart(2,'0');
   var ap = document.getElementById('apparaat').value;
   var cat = document.getElementById('categorie').value;
   var pr = document.getElementById('probleem').value.trim();
@@ -593,7 +595,9 @@ function leeg() {
   ['voornaam','achternaam','postcode','vrijwilliger','probleem','oplossing','opmerkingen'].forEach(function(id) { document.getElementById(id).value = ''; });
   ['geslacht','leeftijd','apparaat','categorie'].forEach(function(id) { document.getElementById(id).value = ''; });
   document.getElementById('status').value = 'afgerond';
-  document.getElementById('datum').value = new Date().toISOString().split('T')[0];
+  var nu = new Date();
+  var lokaalDatum = nu.getFullYear() + '-' + String(nu.getMonth()+1).padStart(2,'0') + '-' + String(nu.getDate()).padStart(2,'0');
+  document.getElementById('datum').value = lokaalDatum;
   document.getElementById('known-banner').style.display = 'none';
   document.getElementById('ac-list').style.display = 'none';
 }
