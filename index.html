@@ -552,35 +552,45 @@ function annuleerEdit() {
 // OPSLAAN
 // ═══════════════════════════════════════
 function opslaan() {
-  var vn = document.getElementById('voornaam').value.trim();
-  var an = document.getElementById('achternaam').value.trim();
-  var dt = datumFix(document.getElementById('datum').value);
-  if (!dt) var _n=new Date(); dt=_n.getFullYear()+'-'+String(_n.getMonth()+1).padStart(2,'0')+'-'+String(_n.getDate()).padStart(2,'0');
-  var ap = document.getElementById('apparaat').value;
+  var vn  = document.getElementById('voornaam').value.trim();
+  var an  = document.getElementById('achternaam').value.trim();
+  var ap  = document.getElementById('apparaat').value;
   var cat = document.getElementById('categorie').value;
-  var pr = document.getElementById('probleem').value.trim();
-  if (!vn||!an||!dt||!ap||!cat||!pr) { alert('Vul minstens in: voornaam, achternaam, datum, apparaat, categorie en probleemomschrijving.'); return; }
-  dt = datumFix(dt);
+  var pr  = document.getElementById('probleem').value.trim();
+  var dt  = document.getElementById('datum').value || '';
+  if (dt.indexOf('T') > -1) dt = dt.split('T')[0];
+
+  if (!vn||!an||!dt||!ap||!cat||!pr) {
+    alert('Vul minstens in: voornaam, achternaam, datum, apparaat, categorie en probleemomschrijving.');
+    return;
+  }
+
   var data = {
     voornaam:vn, achternaam:an,
-    geslacht: document.getElementById('geslacht').value,
-    leeftijd: document.getElementById('leeftijd').value,
-    postcode: document.getElementById('postcode').value.trim(),
-    datum: dt,
+    geslacht:     document.getElementById('geslacht').value,
+    leeftijd:     document.getElementById('leeftijd').value,
+    postcode:     document.getElementById('postcode').value.trim(),
+    datum:        dt,
     vrijwilliger: document.getElementById('vrijwilliger').value.trim(),
     apparaat:ap, categorie:cat, probleem:pr,
-    oplossing: document.getElementById('oplossing').value.trim(),
-    status: document.getElementById('status').value,
-    opmerkingen: document.getElementById('opmerkingen').value.trim()
+    oplossing:    document.getElementById('oplossing').value.trim(),
+    status:       document.getElementById('status').value,
+    opmerkingen:  document.getElementById('opmerkingen').value.trim()
   };
+
   if (editId) {
-    var idx = -1;
-    for (var i = 0; i < DB.length; i++) { if (String(DB[i].id) === String(editId)) { idx = i; break; } }
-    if (idx !== -1) { DB[idx] = Object.assign({}, DB[idx], data); stuur(DB[idx], 'update'); }
+    var idx2 = -1;
+    for (var i = 0; i < DB.length; i++) {
+      if (String(DB[i].id) === String(editId)) { idx2 = i; break; }
+    }
+    if (idx2 !== -1) { DB[idx2] = Object.assign({}, DB[idx2], data); stuur(DB[idx2], 'update'); }
     saveD(); setSS('ok', 'Wijziging opgeslagen'); toonToast('Record bijgewerkt!'); annuleerEdit();
   } else {
     var rec = Object.assign({id: String(Date.now())}, data);
-    DB.push(rec); saveD(); stuur(rec, 'nieuw'); setSS('ok', 'Bezoek opgeslagen'); toonToast('Bezoek van ' + vn + ' ' + an + ' opgeslagen!'); leeg();
+    DB.push(rec); saveD(); stuur(rec, 'nieuw');
+    setSS('ok', 'Bezoek opgeslagen');
+    toonToast('Bezoek van ' + vn + ' ' + an + ' opgeslagen!');
+    leeg();
   }
 }
 
