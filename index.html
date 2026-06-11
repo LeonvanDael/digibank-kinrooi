@@ -310,8 +310,11 @@ tr:hover td{background:#f0f7ff;cursor:pointer}
 // ═══════════════════════════════════════
 function datumFix(d) {
   if (!d) return '';
-  d = String(d);
-  if (d.indexOf('T') > -1) d = d.split('T')[0];
+  d = String(d).trim();
+  // Verwijder tijdsdeel indien aanwezig
+  if (d.indexOf('T') > -1) d = d.substring(0, d.indexOf('T'));
+  // Verwijder alles na een spatie
+  if (d.indexOf(' ') > -1) d = d.substring(0, d.indexOf(' '));
   return d;
 }
 
@@ -449,7 +452,8 @@ function toonLoginFout() {
 // ═══════════════════════════════════════
 function init() {
   var today = new Date();
-  document.getElementById('datum').value = today.toISOString().split('T')[0];
+  var vandaag = today.toISOString().split('T')[0];
+  document.getElementById('datum').value = vandaag;
   document.getElementById('hdr-datum').textContent = today.toLocaleDateString('nl-BE', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
   document.getElementById('hdr-user').textContent = 'Ingelogd als: ' + ik;
   document.getElementById('hdr-naam').textContent = ik + ' \u2014 Digihelper';
