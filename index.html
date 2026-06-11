@@ -393,21 +393,6 @@ function saveG(){
   }
 }
 // normaliseerDatum hierboven gedefinieerd
-function normaliseerDatumDup(d){
-  if(!d) return '';
-  d = String(d);
-  // Verwijder tijdsdeel
-  if(d.indexOf('T') > -1) d = d.split('T')[0];
-  // Converteer "Wed Jun 10 2026..." formaat
-  if(isNaN(Date.parse(d)) === false && d.length > 10){
-    var dt = new Date(d);
-    var j = dt.getFullYear();
-    var m = dt.getMonth()+1;
-    var dd = dt.getDate();
-    return j+'-'+(m<10?'0'+m:m)+'-'+(dd<10?'0'+dd:dd);
-  }
-  return d;
-}
 
 function saveD(){
   DB = DB.map(function(r){
@@ -1476,20 +1461,7 @@ var DEF_USERS = [
 var gebruikers = JSON.parse(localStorage.getItem('db_g3') || JSON.stringify(DEF_USERS));
 var ik = null;
 var mijn = {};
-function normaliseerDatum(d){
-  if(!d) return '';
-  d = String(d).trim();
-  if(d.indexOf('T') > -1) d = d.split('T')[0];
-  // Controleer of het al yyyy-mm-dd is
-  if(/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
-  // Probeer te parsen
-  var dp = new Date(d);
-  if(!isNaN(dp.getTime())){
-    var j=dp.getFullYear(), m=dp.getMonth()+1, dd=dp.getDate();
-    return j+'-'+(m<10?'0'+m:m)+'-'+(dd<10?'0'+dd:dd);
-  }
-  return d;
-}
+
 
 var DB = (function(){
   var d = JSON.parse(localStorage.getItem('db_data') || '[]');
@@ -1510,21 +1482,6 @@ function saveG(){
   }
 }
 // normaliseerDatum hierboven gedefinieerd
-function normaliseerDatumDup(d){
-  if(!d) return '';
-  d = String(d);
-  // Verwijder tijdsdeel
-  if(d.indexOf('T') > -1) d = d.split('T')[0];
-  // Converteer "Wed Jun 10 2026..." formaat
-  if(isNaN(Date.parse(d)) === false && d.length > 10){
-    var dt = new Date(d);
-    var j = dt.getFullYear();
-    var m = dt.getMonth()+1;
-    var dd = dt.getDate();
-    return j+'-'+(m<10?'0'+m:m)+'-'+(dd<10?'0'+dd:dd);
-  }
-  return d;
-}
 
 function saveD(){
   DB = DB.map(function(r){
