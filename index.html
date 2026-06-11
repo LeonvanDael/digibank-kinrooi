@@ -352,9 +352,7 @@ var editId = null;
 function saveD() {
   DB = DB.map(function(r) {
     r.id = String(r.id);
-    var d = datumFix(r.datum);
-    if (d) r.datum = d;
-    // Anders: bewaar originele waarde
+    // Bewaar datum zoals die is - niet aanpassen
     return r;
   });
   localStorage.setItem('db_data4', JSON.stringify(DB));
@@ -364,8 +362,6 @@ function laadLokaal() {
   var d = JSON.parse(localStorage.getItem('db_data4') || '[]');
   DB = d.map(function(r) {
     r.id = String(r.id);
-    var df = datumFix(r.datum);
-    if (df) r.datum = df;
     return r;
   });
 }
@@ -389,7 +385,18 @@ function laadVanSheets() {
   setSS('bezig', 'Laden...');
   return fetch(SURL + '?actie=lees').then(function(r) { return r.json(); }).then(function(d) {
     if (d.records) {
-      DB = d.records.map(function(r) { r.id = String(r.id); r.datum = datumFix(r.datum); return r; });
+      DB = d.records.map(function(r) {
+        r.id = String(r.id);
+        // Datum correct verwerken
+        var ruw = String(r.datum || '');
+        if (ruw.indexOf('T') > -1) ruw = ruw.split('T')[0];
+        if (ruw.indexOf('/') > -1) {
+          var p = ruw.split('/');
+          ruw = p[2]+'-'+('0'+p[1]).slice(-2)+'-'+('0'+p[0]).slice(-2);
+        }
+        r.datum = ruw;
+        return r;
+      });
       saveD(); setSS('ok', DB.length + ' records'); renderDB();
     }
   }).catch(function() { setSS('err', 'Geen verbinding'); return Promise.reject(); });
