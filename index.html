@@ -568,11 +568,22 @@ function opslaan() {
   var ap  = document.getElementById('apparaat').value;
   var cat = document.getElementById('categorie').value;
   var pr  = document.getElementById('probleem').value.trim();
-  var dt  = document.getElementById('datum').value || '';
-  if (dt.indexOf('T') > -1) dt = dt.split('T')[0];
 
-  if (!vn||!an||!dt||!ap||!cat||!pr) {
-    alert('Vul minstens in: voornaam, achternaam, datum, apparaat, categorie en probleemomschrijving.');
+  // Datum: probeer uit veld, anders vandaag
+  var datumVeld = document.getElementById('datum');
+  var dt = '';
+  try {
+    dt = datumVeld ? String(datumVeld.value || '').split('T')[0].trim() : '';
+  } catch(e) { dt = ''; }
+  if (!dt || dt.length < 8) {
+    var n = new Date();
+    dt = n.getFullYear() + '-' +
+         ('0'+(n.getMonth()+1)).slice(-2) + '-' +
+         ('0'+n.getDate()).slice(-2);
+  }
+
+  if (!vn||!an||!ap||!cat||!pr) {
+    alert('Vul minstens in: voornaam, achternaam, apparaat, categorie en probleemomschrijving.');
     return;
   }
 
@@ -590,11 +601,11 @@ function opslaan() {
   };
 
   if (editId) {
-    var idx2 = -1;
+    var eidx = -1;
     for (var i = 0; i < DB.length; i++) {
-      if (String(DB[i].id) === String(editId)) { idx2 = i; break; }
+      if (String(DB[i].id) === String(editId)) { eidx = i; break; }
     }
-    if (idx2 !== -1) { DB[idx2] = Object.assign({}, DB[idx2], data); stuur(DB[idx2], 'update'); }
+    if (eidx !== -1) { DB[eidx] = Object.assign({}, DB[eidx], data); stuur(DB[eidx], 'update'); }
     saveD(); setSS('ok', 'Wijziging opgeslagen'); toonToast('Record bijgewerkt!'); annuleerEdit();
   } else {
     var rec = Object.assign({id: String(Date.now())}, data);
