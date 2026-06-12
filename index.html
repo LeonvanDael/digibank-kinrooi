@@ -762,32 +762,32 @@ function exportCSV() {
 // ═══════════════════════════════════════
 // CSV IMPORT
 // ═══════════════════════════════════════
-function csvImporteren() {
+function csvImporteren(){
   var file = document.getElementById('csv-upload').files[0];
   var fb = document.getElementById('import-fb');
-  if (!file) { alert('Selecteer eerst een CSV bestand.'); return; }
+  if(!file){alert('Selecteer eerst een CSV bestand.');return;}
   var reader = new FileReader();
-  reader.onload = function(e) {
-    var tekst = e.target.result.replace(/^\uFEFF/, '');
-    var regels = tekst.replace(/\r/g, '').split('\n').filter(function(r) { return r.trim() !== ''; });
-    if (regels.length < 2) { fb.innerHTML = '<span style="color:#8a1a1a">Bestand is leeg.</span>'; return; }
+  reader.onload = function(e){
+    var tekst = e.target.result.replace(/^\uFEFF/,'');
+    var regels = tekst.replace(/\r/g,'').split('\n').filter(function(r){return r.trim()!=='';});
+    if(regels.length < 2){fb.innerHTML='<span style="color:#8a1a1a">Bestand is leeg.</span>';return;}
     var header = regels[0].split(',');
     var heeftID = header[0].trim().toUpperCase() === 'ID';
     var o = heeftID ? 0 : -1;
     var nieuweRecords = [];
-    for (var i = 1; i < regels.length; i++) {
-      var cols = [], huidig = '', inQ = false;
-      for (var k = 0; k < regels[i].length; k++) {
-        var ch = regels[i][k];
-        if (ch === '"') { inQ = !inQ; }
-        else if (ch === ',' && !inQ) { cols.push(huidig); huidig = ''; }
-        else { huidig += ch; }
+    for(var i=1;i<regels.length;i++){
+      var cols=[], huidig='', inQ=false;
+      for(var k=0;k<regels[i].length;k++){
+        var ch=regels[i][k];
+        if(ch==='"'){inQ=!inQ;}
+        else if(ch===','&&!inQ){cols.push(huidig);huidig='';}
+        else{huidig+=ch;}
       }
       cols.push(huidig);
-      if (cols.length < 8) continue;
+      if(cols.length < 8) continue;
       nieuweRecords.push({
         id: String(heeftID && cols[0].trim() ? cols[0].trim() : Date.now()+i),
-        datum: datumFix((cols[1+o]||'').trim()),
+        datum: String(cols[1+o]||'').trim().split('T')[0],
         voornaam: (cols[2+o]||'').trim(), achternaam: (cols[3+o]||'').trim(),
         geslacht: (cols[4+o]||'').trim(), leeftijd: (cols[5+o]||'').trim(),
         postcode: (cols[6+o]||'').trim(), apparaat: (cols[7+o]||'').trim(),
@@ -799,29 +799,29 @@ function csvImporteren() {
         opmerkingen: (cols[13+o]||'').trim().replace(/^"|"$/g,'').replace(/""/g,'"')
       });
     }
-    if (!nieuweRecords.length) { fb.innerHTML = '<span style="color:#8a1a1a">Geen records gevonden.</span>'; return; }
-    var keuze = window.confirm(nieuweRecords.length + ' records gevonden.\n\nHuidige database: ' + DB.length + ' records.\n\nOK = samenvoegen\nAnnuleren = alles vervangen');
-    if (keuze) {
-      var bestaand = {};
-      DB.forEach(function(r) { bestaand[String(r.id)] = true; bestaand[(r.voornaam+'|'+r.achternaam+'|'+r.datum).toLowerCase()] = true; });
-      var toegevoegd = 0;
-      nieuweRecords.forEach(function(r) {
-        var sl = (r.voornaam+'|'+r.achternaam+'|'+r.datum).toLowerCase();
-        if (!bestaand[String(r.id)] && !bestaand[sl]) { DB.push(r); toegevoegd++; bestaand[String(r.id)] = true; bestaand[sl] = true; }
+    if(!nieuweRecords.length){fb.innerHTML='<span style="color:#8a1a1a">Geen records gevonden.</span>';return;}
+    if(!confirm(nieuweRecords.length+' records gevonden.\n\nDe huidige database wordt volledig vervangen door de backup.\nWeet je het zeker?'))return;
+    fb.innerHTML='<span style="color:#ff9800">Bezig...</span>';
+    setSS('bezig','Database vervangen...');
+    fetch(SURL,{method:'POST',body:JSON.stringify({actie:'vervangAlles',records:nieuweRecords})})
+      .then(function(r){return r.json();})
+      .then(function(){
+        DB=nieuweRecords; saveD();
+        setSS('ok',DB.length+' records hersteld');
+        fb.innerHTML='<span style="color:#1e6b35"><i class="ti ti-check"></i> '+DB.length+' records hersteld uit backup!</span>';
+        toonToast('Backup succesvol teruggezet!');
+        renderDB();
+      })
+      .catch(function(){
+        DB=nieuweRecords; saveD();
+        setSS('err','Lokaal hersteld');
+        fb.innerHTML='<span style="color:#e67e00">Lokaal hersteld. Klik Vernieuwen om te synchroniseren.</span>';
+        toonToast('Backup lokaal hersteld!');
+        renderDB();
       });
-      saveD(); fb.innerHTML = '<span style="color:#1e6b35"><i class="ti ti-check"></i> ' + toegevoegd + ' records toegevoegd.</span>'; toonToast(toegevoegd + ' records geimporteerd!'); renderDB();
-    } else {
-      if (!confirm('WAARSCHUWING: de volledige database wordt vervangen. Zeker?')) return;
-      fb.innerHTML = '<span style="color:#ff9800">Bezig...</span>';
-      setSS('bezig', 'Database vervangen...');
-      fetch(SURL, {method:'POST', body:JSON.stringify({actie:'vervangAlles', records:nieuweRecords})})
-        .then(function(r) { return r.json(); })
-        .then(function() { DB = nieuweRecords; saveD(); setSS('ok', DB.length+' records hersteld'); fb.innerHTML = '<span style="color:#1e6b35"><i class="ti ti-check"></i> ' + DB.length + ' records hersteld!</span>'; toonToast('Backup teruggezet!'); renderDB(); })
-        .catch(function() { DB = nieuweRecords; saveD(); setSS('err', 'Lokaal hersteld'); fb.innerHTML = '<span style="color:#e67e00">Lokaal hersteld. Klik Vernieuwen.</span>'; toonToast('Backup lokaal hersteld!'); renderDB(); });
-    }
-    document.getElementById('csv-upload').value = '';
+    document.getElementById('csv-upload').value='';
   };
-  reader.readAsText(file, 'UTF-8');
+  reader.readAsText(file,'UTF-8');
 }
 
 // ═══════════════════════════════════════
